@@ -137,6 +137,10 @@ def get_label_anno(label_path):
     num_gt = len(annotations['name'])
     annotations['truncated'] = np.array([float(x[1]) for x in content])
     annotations['occluded'] = np.array([int(x[2]) for x in content])
+    '''
+    truncated Integer (0,1,2) indicating the level of truncation.
+    occluded Integer (0,1,2,3) indicating occlusion state.
+    '''
     annotations['alpha'] = np.array([float(x[3]) for x in content])
     annotations['bbox'] = np.array([[float(info) for info in x[4:8]]
                                     for x in content]).reshape(-1, 4)

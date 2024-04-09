@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 import mmcv
 import mmengine
 import numpy as np
+import laspy
 from mmcv.transforms import LoadImageFromFile
 from mmcv.transforms.base import BaseTransform
 from mmdet.datasets.transforms import LoadAnnotations
@@ -693,6 +694,30 @@ class LoadPointsFromFile(BaseTransform):
         repr_str += f'norm_intensity={self.norm_intensity})'
         repr_str += f'norm_elongation={self.norm_elongation})'
         return repr_str
+
+@TRANSFORMS.register_module()
+class LoadPointsFromLas(LoadPointsFromFile):
+    def _load_las_points(self, pts_filename: str) -> np.ndarray:
+        """LoadPointsFromLas and return np.ndarray(N, 4) with intensity
+        """
+        pcd = laspy.read(pts_filename)
+        points = np.vstack([pcd.x, pcd.y, pcd.z, pcd.intensity]).T
+        print(f'LoadPointsFromLas {pts_filename}', len(points))
+        return points
+    
+    def transform(self, results: dict) -> dict:
+        """
+        Generate LiDARPoints format
+        """
+        pts_file_path = results['lidar_points']['lidar_path']
+        points = self._load_las_points(pts_file_path)  # (N, 4)
+        points = points[:, self.use_dim]
+
+        points_class = get_points_type(self.coord_type)
+        points = points_class(points, points_dim=points.shape[-1])
+        results['points'] = points
+
+        return results
 
 
 @TRANSFORMS.register_module()

@@ -1,6 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pickle
 from os import path as osp
+import os
+import shutil
+import laspy
 
 import mmcv
 import mmengine
@@ -217,6 +220,32 @@ def create_groundtruth_database(dataset_class_name,
                     with_label_3d=True,
                     backend_args=backend_args)
             ])
+        
+    elif dataset_class_name == 'CustomDataset':
+        backend_args = None
+        dataset_cfg.update(
+            test_mode=False,
+            data_prefix=dict(
+                pts='training/velodyne'),
+            modality=dict(
+                use_lidar=True,
+                # use_depth=False,
+                # use_lidar_intensity=True,
+                use_camera=False,
+            ),
+            pipeline=[
+                dict(
+                    type='LoadPointsFromLas',
+                    coord_type='LIDAR',
+                    load_dim=4,
+                    use_dim=4,
+                    backend_args=backend_args),
+                dict(
+                    type='LoadAnnotations3D',
+                    with_bbox_3d=True,
+                    with_label_3d=True,
+                    backend_args=backend_args)
+            ])
 
     dataset = DATASETS.build(dataset_cfg)
 
@@ -225,6 +254,10 @@ def create_groundtruth_database(dataset_class_name,
     if db_info_save_path is None:
         db_info_save_path = osp.join(data_path,
                                      f'{info_prefix}_dbinfos_train.pkl')
+        
+    if os.path.exists(database_save_path):
+        shutil.rmtree(database_save_path)   
+        
     mmengine.mkdir_or_exist(database_save_path)
     all_db_infos = dict()
     if with_mask:
@@ -288,7 +321,8 @@ def create_groundtruth_database(dataset_class_name,
                 gt_boxes, gt_masks, mask_inds, annos['img'])
 
         for i in range(num_obj):
-            filename = f'{image_idx}_{names[i]}_{i}.bin'
+            # filename = f'{image_idx}_{names[i]}_{i}.bin'
+            filename = f'{image_idx}_{names[i]}_{i}.laz'
             abs_filepath = osp.join(database_save_path, filename)
             rel_filepath = osp.join(f'{info_prefix}_gt_database', filename)
 
@@ -305,8 +339,17 @@ def create_groundtruth_database(dataset_class_name,
                 mmcv.imwrite(object_img_patches[i], img_patch_path)
                 mmcv.imwrite(object_masks[i], mask_patch_path)
 
-            with open(abs_filepath, 'w') as f:
-                gt_points.tofile(f)
+            ''' save bin file'''
+            # with open(abs_filepath, 'w') as f:
+            #     gt_points.tofile(f)
+
+            ''' save laz file'''
+            header = laspy.LasHeader(point_format=3, version='1.2')
+            outfile = laspy.LasData(header)
+            outfile.x = gt_points[:, 0]
+            outfile.y = gt_points[:, 1]
+            outfile.z = gt_points[:, 2]
+            outfile.write(abs_filepath)
 
             if (used_classes is None) or names[i] in used_classes:
                 db_info = {
@@ -455,7 +498,8 @@ class GTDatabaseCreater:
                 gt_boxes, gt_masks, mask_inds, annos['img'])
 
         for i in range(num_obj):
-            filename = f'{image_idx}_{names[i]}_{i}.bin'
+            # filename = f'{image_idx}_{names[i]}_{i}.bin'
+            filename = f'{image_idx}_{names[i]}_{i}.laz'
             abs_filepath = osp.join(self.database_save_path, filename)
             rel_filepath = osp.join(f'{self.info_prefix}_gt_database',
                                     filename)
@@ -473,8 +517,17 @@ class GTDatabaseCreater:
                 mmcv.imwrite(object_img_patches[i], img_patch_path)
                 mmcv.imwrite(object_masks[i], mask_patch_path)
 
-            with open(abs_filepath, 'w') as f:
-                gt_points.tofile(f)
+            ''' save bin file'''
+            # with open(abs_filepath, 'w') as f:
+            #     gt_points.tofile(f)
+
+            ''' save laz file'''
+            header = laspy.LasHeader(point_format=3, version='1.2')
+            outfile = laspy.LasData(header)
+            outfile.x = gt_points[:, 0]
+            outfile.y = gt_points[:, 1]
+            outfile.z = gt_points[:, 2]
+            outfile.write(abs_filepath)
 
             if (self.used_classes is None) or names[i] in self.used_classes:
                 db_info = {

@@ -11,6 +11,9 @@ from mmengine.model import stack_batch
 from mmengine.utils import is_seq_of
 from torch import Tensor
 from torch.nn import functional as F
+# torch.backends.cuda.enable_mem_efficient_sdp(False)
+# torch.backends.cuda.enable_flash_sdp(False)
+# torch.backends.cuda.enable_math_sdp(True)
 
 from mmdet3d.registry import MODELS
 from mmdet3d.structures.det3d_data_sample import SampleList

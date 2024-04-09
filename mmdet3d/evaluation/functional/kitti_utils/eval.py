@@ -82,14 +82,14 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
     return num_valid_gt, ignored_gt, ignored_dt, dc_bboxes
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True)  # Error
 def image_box_overlap(boxes, query_boxes, criterion=-1):
     N = boxes.shape[0]
     K = query_boxes.shape[0]
     overlaps = np.zeros((N, K), dtype=boxes.dtype)
     for k in range(K):
         qbox_area = ((query_boxes[k, 2] - query_boxes[k, 0]) *
-                     (query_boxes[k, 3] - query_boxes[k, 1]))
+                    (query_boxes[k, 3] - query_boxes[k, 1]))
         for n in range(N):
             iw = (
                 min(boxes[n, 2], query_boxes[k, 2]) -
@@ -447,6 +447,50 @@ def _prepare_data(gt_annos, dt_annos, current_class, difficulty):
     return (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, dontcares,
             total_dc_num, total_num_valid_gt)
 
+def _prepare_data_(gt_annos, dt_annos, current_class, difficulty):
+    gt_datas_list = []
+    dt_datas_list = []
+    total_dc_num = []
+    ignored_gts, ignored_dets, dontcares = [], [], []
+    total_num_valid_gt = 0
+    for i in range(len(gt_annos)):
+        num_valid_gt, ignored_gt, ignored_det, dc_bboxes = 6, [],[],[]
+        ignored_gts.append(np.array(ignored_gt, dtype=np.int64))
+        ignored_dets.append(np.array(ignored_det, dtype=np.int64))
+        if len(dc_bboxes) == 0:
+            dc_bboxes = np.zeros((0, 4)).astype(np.float64)
+        else:
+            dc_bboxes = np.stack(dc_bboxes, 0).astype(np.float64)
+        total_dc_num.append(dc_bboxes.shape[0])
+        dontcares.append(dc_bboxes)
+        total_num_valid_gt += num_valid_gt
+        # custom format of gt anno
+        gt_annos[i]['bbox'] = np.array([x[:2] for x in gt_annos[i]['location']], dtype=np.float64)
+        gt_annos[i]['alpha'] = np.array([-np.arctan2(-x[1], x[0]) + y for x,y in zip(gt_annos[i]['location'], gt_annos[i]['rotation_y']) ], dtype=np.float64)
+        print("gt_annos[i]['bbox']" , gt_annos[i]['bbox'])
+        print("gt_annos[i]['alpha']", gt_annos[i]['alpha'])
+        print('gt_annos', gt_annos)
+        try:
+            gt_datas = np.concatenate(
+                [gt_annos[i]['bbox'], gt_annos[i]['alpha'][..., np.newaxis]], 1)
+        except:
+            gt_datas = np.concatenate(
+                [gt_annos[i]['bbox'], gt_annos[i]['alpha'][..., np.newaxis]], None)
+        try:
+            dt_datas = np.concatenate([
+                dt_annos[i]['bbox'], dt_annos[i]['alpha'][..., np.newaxis],
+                dt_annos[i]['score'][..., np.newaxis]
+            ], 1)
+        except:
+            dt_datas = np.concatenate([
+                dt_annos[i]['bbox'], dt_annos[i]['alpha'][..., np.newaxis],
+                dt_annos[i]['score'][..., np.newaxis]
+            ], None)
+        gt_datas_list.append(gt_datas)
+        dt_datas_list.append(dt_datas)
+    total_dc_num = np.stack(total_dc_num, axis=0)
+    return (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, dontcares,
+            total_dc_num, total_num_valid_gt)
 
 def eval_class(gt_annos,
                dt_annos,
@@ -472,6 +516,7 @@ def eval_class(gt_annos,
         dict[str, np.ndarray]: recall, precision and aos
     """
     assert len(gt_annos) == len(dt_annos)
+    # print('dt_annos',dt_annos)
     num_examples = len(gt_annos)
     if num_examples < num_parts:
         num_parts = num_examples
@@ -491,7 +536,10 @@ def eval_class(gt_annos,
     aos = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
     for m, current_class in enumerate(current_classes):
         for idx_l, difficulty in enumerate(difficultys):
-            rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty)
+            # Kitti
+            # rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty)
+            # Custom
+            rets = _prepare_data_(gt_annos, dt_annos, current_class, difficulty)
             (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets,
              dontcares, total_dc_num, total_num_valid_gt) = rets
             for k, min_overlap in enumerate(min_overlaps[:, metric, m]):
@@ -599,7 +647,8 @@ def do_eval(gt_annos,
             min_overlaps,
             eval_types=['bbox', 'bev', '3d']):
     # min_overlaps: [num_minoverlap, metric, num_class]
-    difficultys = [0, 1, 2]
+    # print('do_eval', eval_types )
+    difficultys = [0] # [0, 1, 2]
     mAP11_bbox = None
     mAP11_aos = None
     mAP40_bbox = None
@@ -948,3 +997,197 @@ def kitti_eval_coco_style(gt_annos, dt_annos, current_classes):
                                  f'{mAPaos[j, 1]:.2f}, '
                                  f'{mAPaos[j, 2]:.2f}'))
     return result
+
+
+def cust_eval(gt_annos,
+               dt_annos,
+               current_classes,
+               eval_types=['3d']):
+    """KITTI evaluation.
+
+    Args:
+        gt_annos (list[dict]): Contain gt information of each sample.
+        dt_annos (list[dict]): Contain detected information of each sample.
+        current_classes (list[str]): Classes to evaluation.
+        eval_types (list[str], optional): Types to eval.
+            Defaults to ['bbox', 'bev', '3d'].
+
+    Returns:
+        tuple: String and dict of evaluation results.
+    """
+    assert len(eval_types) > 0, 'must contain at least one evaluation type'
+    if 'aos' in eval_types:
+        assert 'bbox' in eval_types, 'must evaluate bbox when evaluating aos'
+
+    # modify to align with num classes
+    overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5, 0.5], 
+                            [0.7, 0.5, 0.5, 0.7, 0.5, 0.5],
+                            [0.7, 0.5, 0.5, 0.7, 0.5, 0.5]])
+    overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5, 0.5],
+                            [0.5, 0.25, 0.25, 0.5, 0.25, 0.25],
+                            [0.5, 0.25, 0.25, 0.5, 0.25, 0.25]])
+    min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
+    class_to_name = {
+    0: 'Bollard', #'Building',
+    1: 'ControlBox',
+    2: 'LampPost',
+    3: 'Sign',
+    4: 'SolarPanel',
+    5: 'Tree'
+    }
+    name_to_class = {v: n for n, v in class_to_name.items()}
+    if not isinstance(current_classes, (list, tuple)):
+        current_classes = [current_classes]
+    current_classes_int = []
+    for curcls in current_classes:
+        if isinstance(curcls, str):
+            current_classes_int.append(name_to_class[curcls])
+        else:
+            current_classes_int.append(curcls)
+    current_classes = current_classes_int
+    min_overlaps = min_overlaps[:, :, current_classes]
+    result = ''
+    # check whether alpha is valid
+    compute_aos = False
+    pred_alpha = False
+    valid_alpha_gt = False
+    # for anno in dt_annos:
+    #     mask = (anno['alpha'] != -10)
+    #     if anno['alpha'][mask].shape[0] != 0:
+    #         pred_alpha = True
+    #         break
+    compute_aos = (pred_alpha)
+    if compute_aos:
+        eval_types.append('aos')
+
+    print('eval', eval_types )
+
+    mAP11_bbox, mAP11_bev, mAP11_3d, mAP11_aos, mAP40_bbox, mAP40_bev, \
+        mAP40_3d, mAP40_aos = do_eval(gt_annos, dt_annos,
+                                      current_classes, min_overlaps,
+                                      eval_types)
+    
+    print("mAP11 - 2D Bbox:", mAP11_bbox)
+    print("mAP11 - BEV:", mAP11_bev)
+    print("mAP11 - 3D:", mAP11_3d)
+    print("mAP11 - AOS:", mAP11_aos)
+    print("mAP40 - 2D Bbox:", mAP40_bbox)
+    print("mAP40 - BEV:", mAP40_bev)
+    print("mAP40 - 3D:", mAP40_3d)
+    print("mAP40 - AOS:", mAP40_aos)
+
+    ret_dict = {}
+
+    print('min_ol',min_overlaps,min_overlaps.shape)
+
+    # calculate AP11
+    result += '\n----------- AP11 Results ------------\n\n'
+    for j, curcls in enumerate(current_classes):
+        # mAP threshold array: [num_minoverlap, metric, class]
+        # mAP result: [num_class, num_diff, num_minoverlap]
+        curcls_name = class_to_name[curcls]
+        for i in range(min_overlaps.shape[0]):
+            # prepare results for print
+            result += ('{} AP11@{:.2f}:\n'.format(
+                curcls_name, *min_overlaps[i, :, j]))
+            if mAP11_bbox is not None:
+                result += 'bbox AP11:{:.4f}\n'.format(
+                    *mAP11_bbox[j, :, i])
+            if mAP11_bev is not None:
+                result += 'bev  AP11:{:.4f},\n'.format(
+                    *mAP11_bev[j, :, i])
+            if mAP11_3d is not None:
+                result += '3d   AP11:{:.4f}\n'.format(
+                    *mAP11_3d[j, :, i])
+            if compute_aos:
+                result += 'aos  AP11:{:.2f}\n'.format(
+                    *mAP11_aos[j, :, i])
+                
+            prefix = f'Orchard/{curcls_name}'
+            if mAP11_3d is not None:
+                ret_dict[f'{prefix}_3D_AP11'] = mAP11_3d[j, 0, i]
+
+
+    # calculate mAP11 over all classes if there are multiple classes
+    if len(current_classes) > 1:
+        # prepare results for print
+        result += ('\nOverall AP11 :\n')
+        if mAP11_bbox is not None:
+            mAP11_bbox = mAP11_bbox.mean(axis=0)
+            result += 'bbox AP11:{:.4f}\n'.format(
+                *mAP11_bbox[:, 0])
+        if mAP11_bev is not None:
+            mAP11_bev = mAP11_bev.mean(axis=0)
+            result += 'bev  AP11:{:.4f}\n'.format(
+                *mAP11_bev[:, 0])
+        if mAP11_3d is not None:
+            mAP11_3d = mAP11_3d.mean(axis=0)
+            result += '3d   AP11:{:.4f}\n'.format(*mAP11_3d[:,
+                                                                            0])
+        if compute_aos:
+            mAP11_aos = mAP11_aos.mean(axis=0)
+            result += 'aos  AP11:{:.2f}\n'.format(
+                *mAP11_aos[:, 0])
+            
+        if mAP11_3d is not None:
+            ret_dict[f'Orchard/Overall_3D_AP11'] = mAP11_3d[0, 0]
+
+    # Calculate AP40
+    result += '\n----------- AP40 Results ------------\n\n'
+    for j, curcls in enumerate(current_classes):
+        # mAP threshold array: [num_minoverlap, metric, class]
+        # mAP result: [num_class, num_diff, num_minoverlap]
+        curcls_name = class_to_name[curcls]
+        for i in range(min_overlaps.shape[0]):
+            # prepare results for print
+            result += ('{} AP40@{:.2f}:\n'.format(
+                curcls_name, *min_overlaps[i, :, j]))
+            if mAP40_bbox is not None:
+                result += 'bbox AP40:{:.4f}\n'.format(
+                    *mAP40_bbox[j, :, i])
+            if mAP40_bev is not None:
+                result += 'bev  AP40:{:.4f}\n'.format(
+                    *mAP40_bev[j, :, i])
+            if mAP40_3d is not None:
+                result += '3d   AP40:{:.4f}\n'.format(
+                    *mAP40_3d[j, :, i])
+            if compute_aos:
+                result += 'aos  AP40:{:.2f}\n'.format(
+                    *mAP40_aos[j, :, i])
+                
+        # prepare results for logger
+            prefix = f'Orchard/{curcls_name}'
+            if mAP40_3d is not None:
+                ret_dict[f'{prefix}_3D_AP40'] =\
+                    mAP40_3d[j, 0, i]
+
+
+    # calculate mAP40 over all classes if there are multiple classes
+    if len(current_classes) > 1:
+        # prepare results for print
+        result += ('\nOverall AP40@{}, {}, {}:\n')
+        if mAP40_bbox is not None:
+            mAP40_bbox = mAP40_bbox.mean(axis=0)
+            result += 'bbox AP40:{:.4f}\n'.format(
+                *mAP40_bbox[:, 0])
+        if mAP40_bev is not None:
+            mAP40_bev = mAP40_bev.mean(axis=0)
+            result += 'bev  AP40:{:.4f}\n'.format(
+                *mAP40_bev[:, 0])
+        if mAP40_3d is not None:
+            mAP40_3d = mAP40_3d.mean(axis=0)
+            result += '3d   AP40:{:.4f}\n'.format(*mAP40_3d[:,
+                                                                            0])
+        if compute_aos:
+            mAP40_aos = mAP40_aos.mean(axis=0)
+            result += 'aos  AP40:{:.2f}\n'.format(
+                *mAP40_aos[:, 0])
+            
+        if mAP40_3d is not None:
+            ret_dict[f'Orchard/Overall_3D_AP40'] = mAP40_3d[0, 0]
+            
+
+    
+    
+
+    return result, ret_dict

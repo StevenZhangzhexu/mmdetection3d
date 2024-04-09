@@ -11,6 +11,7 @@ from .scannet_dataset import (ScanNetDataset, ScanNetInstanceSegDataset,
 from .seg3d_dataset import Seg3DDataset
 from .semantickitti_dataset import SemanticKittiDataset
 from .sunrgbd_dataset import SUNRGBDDataset
+from .cust_dataset import CustomDataset
 # yapf: disable
 from .transforms import (AffineResize, BackgroundPointsFilter, GlobalAlignment,
                          GlobalRotScaleTrans, IndoorPatchPointSample,
@@ -38,4 +39,5 @@ __all__ = [
     'VoxelBasedPointSampler', 'get_loading_pipeline', 'RandomDropPointsColor',
     'RandomJitterPoints', 'ObjectNameFilter', 'AffineResize',
     'RandomShiftScale', 'LoadPointsFromDict', 'Resize3D', 'RandomResize3D',
+    'CustomDataset'
 ]

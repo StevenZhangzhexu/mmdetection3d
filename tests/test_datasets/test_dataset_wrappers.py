@@ -38,9 +38,9 @@ class Identity(BaseTransform):
         return packed_input
 
 
-@DATASETS.register_module()
-class CustomDataset(NuScenesDataset):
-    pass
+# @DATASETS.register_module()
+# class CustomDataset(NuScenesDataset):
+#     pass
 
 
 class TestCBGSDataset:
