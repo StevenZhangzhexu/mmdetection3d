@@ -1202,6 +1202,8 @@ def update_orchard_infos(pkl_path, out_dir):
     data_list = mmengine.load(pkl_path)
     print('Start updating:')
     converted_list = []
+    ignore_class_name = set()
+
     for ori_info_dict in mmengine.track_iter_progress(data_list):
         temp_data_info = get_empty_standard_data_info()
         temp_data_info['sample_idx'] = ori_info_dict['image']['image_idx']
@@ -1212,7 +1214,7 @@ def update_orchard_infos(pkl_path, out_dir):
             ori_info_dict['point_cloud']['velodyne_path']).name
 
         anns = ori_info_dict.get('annos', None)
-        ignore_class_name = set()
+
         if anns is not None:
             num_instances = len(anns['name'])
             instance_list = []
