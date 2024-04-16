@@ -4,9 +4,12 @@ _base_ = [
     '../_base_/schedules/cyclic-40e.py', '../_base_/default_runtime.py'
 ]
 
-point_cloud_range = [28063,31615, 0, 28351, 31834, 32] #[-20,-6, 0, 20, 6, 20] #  #[-20,-20,-20, 656, 840, 249] #[-20, -6, 0, 20, 6, 20]
+# point_cloud_range = [28063, 31615, 0, 28351, 31834, 32]  # [-20,-6, 0, 20, 6, 20] #  #[-20,-20,-20, 656, 840, 249] #[-20, -6, 0, 20, 6, 20]
+point_cloud_range = [28063.999207891196, 28351.999207891196, 31615.99992779688, 31834.89992779688, 0.402, 30.702]
+
 # dataset settings
-data_root = 'data/custom/'
+# data_root = 'data/custom/'
+data_root = '../data/orchard_road/'
 class_names = ['Bollard',
                 # 'Building',
                 #'Bus Stop',

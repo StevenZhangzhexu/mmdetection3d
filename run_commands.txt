@@ -5,3 +5,11 @@ python demo/pcd_demo.py /media/pc1/New\ Volume/Minar/data/orchard_road/points/Or
 
 python tools/create_data.py custom --root-path ../data/orchard_road --out-dir ../data/orchard_road --extra-tag custom
 
+# training
+python tools/train.py ${CONFIG_FILE} [optional arguments]
+python tools/train.py configs/pointpillars/pointpillars_hv_secfpn_8xb6_custom.py
+
+# single-gpu testing
+python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--cfg-options test_evaluator.pklfile_prefix=${RESULT_FILE}]  [--show] [--show-dir ${SHOW_DIR}]
+python tools/test.py configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-car.py hv_pointpillars_secfpn_6x8_160e_kitti-3d-car_20220331_134606-d42d15ed.pth --task lidar_det --show
+python tools/test.py configs/pointpillars/pointpillars_hv_secfpn_8xb6_custom.py hv_pointpillars_secfpn_6x8_160e_kitti-3d-custom.pth --task lidar_det --show

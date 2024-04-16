@@ -8,7 +8,7 @@ mim install mmengine
 mim install 'mmcv>=2.0.0rc4'
 mim install 'mmdet>=3.0.0'
 
-pip install laspy
+pip install laspy laszip
 
 pip install -v -e .
 
