@@ -280,7 +280,7 @@ def orchard_data_prep(root_path, info_prefix, out_dir):
     """
     orchard_converter.create_base_info_file(root_path, info_prefix)
     create_groundtruth_database(
-        'CustomDataset',
+        'OrchardDataset',
         root_path,
         info_prefix,
         f'{info_prefix}_infos_train.pkl',
