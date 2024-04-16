@@ -9,7 +9,8 @@ from tools.dataset_converters import kitti_converter as kitti
 from tools.dataset_converters import lyft_converter as lyft_converter
 from tools.dataset_converters import nuscenes_converter as nuscenes_converter
 from tools.dataset_converters import semantickitti_converter
-from tools.dataset_converters import custom_converter 
+from tools.dataset_converters import orchard_converter
+from tools.dataset_converters import custom_converter
 from tools.dataset_converters.create_gt_database import (
     GTDatabaseCreater, create_groundtruth_database)
 from tools.dataset_converters.update_infos_to_v2 import update_pkl_infos
@@ -266,6 +267,27 @@ def semantickitti_data_prep(info_prefix, out_dir):
         info_prefix, out_dir)
 
 
+def orchard_data_prep(root_path, info_prefix, out_dir):
+    """Prepare related data for base dataset with pointclouds
+    and annotations.
+    Related data consists of '.pkl' files recording basic infos,
+    3D annotations and grobaseundtruth database.
+    Args:
+        root_path (str): Path of dataset root.
+        info_prefix (str): The prefix of info filenames.
+        version (str): Dataset version.
+        out_dir (str): Output directory of the groundtruth database info.
+    """
+    orchard_converter.create_base_info_file(root_path, info_prefix)
+    create_groundtruth_database(
+        'CustomDataset',
+        root_path,
+        info_prefix,
+        f'{info_prefix}_infos_train.pkl',
+        relative_path=False,
+        with_mask=False)
+
+
 def cust_data_prep(root_path, info_prefix, out_dir):
     """Prepare related data for base dataset with pointclouds
     and annotations.
@@ -439,6 +461,12 @@ if __name__ == '__main__':
         semantickitti_data_prep(
             info_prefix=args.extra_tag, out_dir=args.out_dir)
         
+    elif args.dataset == 'orchard':
+        orchard_data_prep(
+            root_path=args.root_path,
+            info_prefix=args.extra_tag,
+            out_dir=args.out_dir)
+
     elif args.dataset == 'custom':
         cust_data_prep(
             root_path=args.root_path,

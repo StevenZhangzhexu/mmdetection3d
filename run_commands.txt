@@ -4,3 +4,5 @@ python demo/pcd_demo.py demo/data/kitti/000008.bin pointpillars_hv_secfpn_8xb6-1
 python demo/pcd_demo.py /media/pc1/New\ Volume/Minar/data/orchard_road/points/Orchard_0913_labelled_E.bin pointpillars_hv_secfpn_8xb6-160e_kitti-3d-car.py hv_pointpillars_secfpn_6x8_160e_kitti-3d-car_20220331_134606-d42d15ed.pth --show
 
 python tools/create_data.py custom --root-path ../data/orchard_road --out-dir ../data/orchard_road --extra-tag custom
+python tools/create_data.py orchard --root-path ../data/orchard_road --out-dir ../data/orchard_road --extra-tag orchard
+
