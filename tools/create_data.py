@@ -264,7 +264,8 @@ def semantickitti_data_prep(info_prefix, out_dir):
     """
     semantickitti_converter.create_semantickitti_info_file(
         info_prefix, out_dir)
-    
+
+
 def cust_data_prep(root_path, info_prefix, out_dir):
     """Prepare related data for base dataset with pointclouds
     and annotations.
