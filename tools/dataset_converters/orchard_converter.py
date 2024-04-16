@@ -46,7 +46,7 @@ def create_base_info_file(data_path,
     filename = save_path / f'{pkl_prefix}_infos_val.pkl'
     print(f'Base info val file is saved to {filename}')
     mmengine.dump(base_infos_val, filename)
-    update_pkl_infos(dataset='custom', out_dir=str(save_path), pkl_path=str(filename))
+    update_pkl_infos(dataset='orchard', out_dir=str(save_path), pkl_path=str(filename))
 
     filename = save_path / f'{pkl_prefix}_infos_trainval.pkl'
     print(f'Base info trainval file is saved to {filename}')
