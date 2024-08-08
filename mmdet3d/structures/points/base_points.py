@@ -245,6 +245,12 @@ class BasePoints:
             Tensor: A binary vector indicating whether each point is inside the
             reference range.
         """
+
+        if isinstance(point_range, np.ndarray):
+            point_range = torch.tensor(point_range, dtype=torch.float32)
+        point_range = point_range.view(6, 1)
+        # print(point_range)
+        
         in_range_flags = ((self.tensor[:, 0] > point_range[0])
                           & (self.tensor[:, 1] > point_range[1])
                           & (self.tensor[:, 2] > point_range[2])

@@ -3,7 +3,7 @@ dataset_type = 'CustomDataset'
 data_root = 'data/custom/'
 class_names = [ 'Bollard',
                 #'Building',
-                #'Bus Stop',
+                'Bus Stop',
                 'ControlBox',
                 #'Ground',
                 'LampPost',
@@ -11,10 +11,11 @@ class_names = [ 'Bollard',
                 # 'Railing',
                 # 'Road',
                 # 'Shrub',
-                'Sign',
-                'SolarPanel',
-                'Tree']  
-point_cloud_range = [28063,31615,0, 28351, 31834, 32], #[-20,-6, 0, 20, 6, 20] #[28063,31615,0, 28351, 31834, 32] #[0, 0, 0, 656, 840, 249]  # adjust according to your dataset
+                # 'Sign',
+                # 'SolarPanel',
+                # 'Tree',
+                'TrafficLight']  
+point_cloud_range = [30264,29862, 1.7, 34040, 41990, 25.7],  # adjust according to your dataset
 input_modality = dict(use_lidar=True, use_camera=False)
 metainfo = dict(classes=class_names)
 

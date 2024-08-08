@@ -467,9 +467,9 @@ def _prepare_data_(gt_annos, dt_annos, current_class, difficulty):
         # custom format of gt anno
         gt_annos[i]['bbox'] = np.array([x[:2] for x in gt_annos[i]['location']], dtype=np.float64)
         gt_annos[i]['alpha'] = np.array([-np.arctan2(-x[1], x[0]) + y for x,y in zip(gt_annos[i]['location'], gt_annos[i]['rotation_y']) ], dtype=np.float64)
-        print("gt_annos[i]['bbox']" , gt_annos[i]['bbox'])
-        print("gt_annos[i]['alpha']", gt_annos[i]['alpha'])
-        print('gt_annos', gt_annos)
+        # print("gt_annos[i]['bbox']" , gt_annos[i]['bbox'])
+        # print("gt_annos[i]['alpha']", gt_annos[i]['alpha'])
+        # print('gt_annos', gt_annos)
         try:
             gt_datas = np.concatenate(
                 [gt_annos[i]['bbox'], gt_annos[i]['alpha'][..., np.newaxis]], 1)
@@ -1060,7 +1060,7 @@ def cust_eval(gt_annos,
     if compute_aos:
         eval_types.append('aos')
 
-    print('eval', eval_types )
+    # print('eval', eval_types )
 
     mAP11_bbox, mAP11_bev, mAP11_3d, mAP11_aos, mAP40_bbox, mAP40_bev, \
         mAP40_3d, mAP40_aos = do_eval(gt_annos, dt_annos,
@@ -1078,7 +1078,7 @@ def cust_eval(gt_annos,
 
     ret_dict = {}
 
-    print('min_ol',min_overlaps,min_overlaps.shape)
+    # print('min_ol',min_overlaps,min_overlaps.shape)
 
     # calculate AP11
     result += '\n----------- AP11 Results ------------\n\n'

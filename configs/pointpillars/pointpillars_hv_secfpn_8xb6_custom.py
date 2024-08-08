@@ -4,15 +4,11 @@ _base_ = [
     '../_base_/schedules/cyclic-40e.py', '../_base_/default_runtime.py'
 ]
 
-# point_cloud_range = [28063, 31615, 0, 28351, 31834, 32]  # [-20,-6, 0, 20, 6, 20] #  #[-20,-20,-20, 656, 840, 249] #[-20, -6, 0, 20, 6, 20]
-point_cloud_range = [28063.999207891196, 31615.99992779688, 0.402, 28351.999207891196, 31834.89992779688, 30.702]
-
-# dataset settings
-# data_root = 'data/custom/'
-data_root = '../data/orchard_road/'
-class_names = ['Bollard',
-                # 'Building',
-                #'Bus Stop',
+point_cloud_range = [30264,29862, 1.7, 34040, 41990, 25.7] #[-20,-6, 0, 20, 6, 20] 
+data_root = 'data/custom/'
+class_names = [ 'Bollard',
+                #'Building',
+                'BusStop',
                 'ControlBox',
                 #'Ground',
                 'LampPost',
@@ -21,8 +17,9 @@ class_names = ['Bollard',
                 # 'Road',
                 # 'Shrub',
                 'Sign',
-                'SolarPanel',
-                'Tree'] 
+                # 'SolarPanel',
+                # 'Tree',
+                'TrafficLight'] 
 metainfo = dict(classes=class_names)
 backend_args = None
 
@@ -35,19 +32,21 @@ db_sampler = dict(
         filter_by_difficulty=[-1],
         # filter_by_min_points=dict(Car=5, Pedestrian=5, Cyclist=5)
         filter_by_min_points = {
-                'Bollard': 0,
+                'Bollard': 5,
                 # 'Building': 15, #5,
                 # 'Bus Stop': 5,
                 'ControlBox': 5, #5,
                 # 'Ground': 5,
-                'LampPost': 5, #5,
+                'LampPost': 5, 
                 # 'Pole': 5,
                 # 'Railing': 5,
                 # 'Road': 5,
                 # 'Shrub': 5,
                 'Sign': 5,
-                'SolarPanel': 5,
-                'Tree': 5,
+                # 'SolarPanel': 5,
+                # 'Tree': 5,
+                'BusStop':5,
+                'TrafficLight':5   
                 }
         ),
     classes=class_names,
@@ -64,8 +63,10 @@ db_sampler = dict(
         # 'Road': 15,
         # 'Shrub': 15,
         'Sign': 15,
-        'SolarPanel': 15,
-        'Tree': 15
+        # 'SolarPanel': 15,
+        # 'Tree': 15
+        'BusStop': 15,
+        'TrafficLight': 15
     },
     points_loader=dict(
         type='LoadPointsFromLas',

@@ -2,7 +2,7 @@
 import tempfile
 from os import path as osp
 from typing import Dict, List, Optional, Sequence, Tuple, Union
-
+import time
 import mmengine
 import numpy as np
 import torch
@@ -52,9 +52,10 @@ class CustomMetric(BaseMetric):
     def __init__(self,
                  ann_file: str,
                  metric: Union[str, List[str]] = 'bbox',
-                 pcd_limit_range: List[float] = [28063,31615, -30, 28351, 31834, 32], # loose
+                 pcd_limit_range: List[float] = [30264,29862, 1.7, 34040, 41990, 25.7], # loose
                  prefix: Optional[str] = None,
-                 pklfile_prefix = 'work_dirs/pointpillars_hv_secfpn_8xb6_custom/result',
+                 pklfile_prefix = 'work_dirs/centerpoint_pillar02_second_secfpn_8xb4-cyclic-20e_custom/result',
+                 #'work_dirs/pointpillars_hv_secfpn_8xb6_custom/result',
                 #  default_cam_key: str = 'CAM2',
                  format_only: bool = False,
                  submission_prefix: Optional[str] = None,
@@ -178,7 +179,7 @@ class CustomMetric(BaseMetric):
             Dict[str, float]: The computed metrics. The keys are the names of
             the metrics, and the values are corresponding results.
         """
-        print('compute_metrics results input:',results)
+        # print('compute_metrics results input:',results)
         logger: MMLogger = MMLogger.get_current_instance()
         self.classes = self.dataset_meta['classes']
 
@@ -203,7 +204,7 @@ class CustomMetric(BaseMetric):
             for result in results
         ]
 
-        print('compute_metrics result_dict for custom_evaluate:',result_dict)
+        # print('compute_metrics result_dict for custom_evaluate:',result_dict)
         for metric in self.metrics:
             ap_dict = self.custom_evaluate(
                 result_dict,
@@ -530,7 +531,7 @@ class CustomMetric(BaseMetric):
 
         if pklfile_prefix is not None:
             if not pklfile_prefix.endswith(('.pkl', '.pickle')):
-                out = f'{pklfile_prefix}.pkl'
+                out = f'{pklfile_prefix}_{time.strftime("%Y-%m-%d_%H-%M-%S", time.gmtime())}.pkl'
             else:
                 out = pklfile_prefix
             mmengine.dump(det_annos, out)

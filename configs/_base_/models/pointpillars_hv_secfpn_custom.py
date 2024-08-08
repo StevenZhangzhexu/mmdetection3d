@@ -1,4 +1,4 @@
-voxel_size = [0.3, 0.3, 32]  # adjust according to your dataset
+voxel_size = [0.2, 0.2, 0.6]  # adjust according to your dataset
 model = dict(
     type='VoxelNet',
     data_preprocessor=dict(
@@ -6,7 +6,7 @@ model = dict(
         voxel=True,
         voxel_layer=dict(
             max_num_points=32,
-            point_cloud_range= [28063,31615,0, 28351, 31855, 32], #[-20,-6, 0, 20, 6, 20], #[-20,-20,-20, 656, 840, 249],
+            point_cloud_range= [30264,29862, 1.7, 34040, 41990, 25.7], #[-20,-6, 0, 20, 6, 20], #[-20,-20,-20, 656, 840, 249],
             voxel_size=voxel_size,
             max_voxels=(16000, 40000))),
     voxel_encoder=dict(
@@ -15,13 +15,13 @@ model = dict(
         feat_channels=[64],
         with_distance=False,
         voxel_size=voxel_size,
-        point_cloud_range= [28063,31615,0, 28351, 31834, 32], #[-20,-6, 0, 20, 6, 20] #[-20,-20,-20, 656, 840, 249]
+        point_cloud_range= [30264,29862, 1.7, 34040, 41990, 25.7], #[-20,-6, 0, 20, 6, 20] #[-20,-20,-20, 656, 840, 249]
         ), 
     # the `output_shape` should be adjusted according to `point_cloud_range`
     # and `voxel_size`
     middle_encoder=dict(
         type='PointPillarsScatter', in_channels=64, 
-        output_shape=[800, 960] #[730, 960]
+        output_shape=[60640, 18880] #[730, 960]
         ), 
     backbone=dict(
         type='SECOND',
@@ -51,12 +51,12 @@ model = dict(
                 # [-20,-6, 0, 20, 6, 20],
                 # [-20,-6, 0, 20, 6, 20],
                 # [-20,-6, 0, 20, 6, 20]
-                [28063,31615, 0, 28351, 31834, 32],
-                [28063,31615, 0, 28351, 31834, 32],
-                [28063,31615, 0, 28351, 31834, 32],
-                [28063,31615, 0, 28351, 31834, 32],
-                [28063,31615, 0, 28351, 31834, 32],
-                [28063,31615, 0, 28351, 31834, 32]
+                [30264,29862, 1.7, 34040, 41990, 25.7],
+                [30264,29862, 1.7, 34040, 41990, 25.7],
+                [30264,29862, 1.7, 34040, 41990, 25.7],
+                [30264,29862, 1.7, 34040, 41990, 25.7],
+                [30264,29862, 1.7, 34040, 41990, 25.7],
+                [30264,29862, 1.7, 34040, 41990, 25.7]
             ],
             sizes=[[0.16, 0.16, 0.7], 
                    [1.2, 0.5, 4.7],

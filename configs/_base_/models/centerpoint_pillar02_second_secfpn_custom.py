@@ -1,4 +1,4 @@
-voxel_size = [0.2, 0.2, 8]
+voxel_size = [0.2, 0.2, 0.6]
 model = dict(
     type='CenterPoint',
     data_preprocessor=dict(
@@ -10,14 +10,14 @@ model = dict(
             max_voxels=(30000, 40000))),
     pts_voxel_encoder=dict(
         type='PillarFeatureNet',
-        in_channels=5,
+        in_channels=4, #5,
         feat_channels=[64],
         with_distance=False,
-        voxel_size=(0.2, 0.2, 8),
+        voxel_size=(0.2, 0.2, 0.6),
         norm_cfg=dict(type='BN1d', eps=1e-3, momentum=0.01),
         legacy=False),
     pts_middle_encoder=dict(
-        type='PointPillarsScatter', in_channels=64, output_shape=(512, 512)),
+        type='PointPillarsScatter', in_channels=64, output_shape=(60640, 18880)), 
     pts_backbone=dict(
         type='SECOND',
         in_channels=64,
@@ -38,19 +38,19 @@ model = dict(
         type='CenterHead',
         in_channels=sum([128, 128, 128]),
         tasks=[
-            dict(num_class=1, class_names=['car']),
-            dict(num_class=2, class_names=['truck', 'construction_vehicle']),
-            dict(num_class=2, class_names=['bus', 'trailer']),
-            dict(num_class=1, class_names=['barrier']),
-            dict(num_class=2, class_names=['motorcycle', 'bicycle']),
-            dict(num_class=2, class_names=['pedestrian', 'traffic_cone']),
+            dict(num_class=1, class_names=['Bollard']),
+            dict(num_class=1, class_names=['ControlBox']),
+            dict(num_class=1, class_names=['LampPost']),
+            dict(num_class=1, class_names=['Sign']),
+            dict(num_class=1, class_names=['BusStop']),
+            dict(num_class=1, class_names=['TrafficLight'])
         ],
         common_heads=dict(
             reg=(2, 2), height=(1, 2), dim=(3, 2), rot=(2, 2), vel=(2, 2)),
         share_conv_channel=64,
         bbox_coder=dict(
             type='CenterPointBBoxCoder',
-            post_center_range=[28063,31615, 0, 28351, 31834, 32],
+            post_center_range=[30264,29862, 1.7, 34040, 41990, 25.7],
             max_num=500,
             score_threshold=0.1,
             out_size_factor=4,
@@ -65,17 +65,18 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(
         pts=dict(
-            grid_size=[512, 512, 1],
+            grid_size=[720, 368, 4], #[512, 512, 1],
             voxel_size=voxel_size,
-            out_size_factor=4,
+            out_size_factor=2, #4
             dense_reg=1,
             gaussian_overlap=0.1,
             max_objs=500,
             min_radius=2,
-            code_weights=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2, 0.2])),
+            code_weights=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.1, 0.1 #, 0.2, 0.2
+                          ])),
     test_cfg=dict(
         pts=dict(
-            post_center_limit_range=[28063,31615, 0, 28351, 31834, 32],
+            post_center_limit_range=[30264,29862, 1.7, 34040, 41990, 25.7],
             max_per_img=500,
             max_pool_nms=False,
             min_radius=[4, 12, 10, 1, 0.85, 0.175],

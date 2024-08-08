@@ -540,19 +540,19 @@ def update_cust_infos(pkl_path, out_dir):
     METAINFO = {
         'classes': ( 
                 'Bollard',
-                # 'Building',
-                #'Bus Stop',
-                'ControlBox', 
+                #'Building',
+                'BusStop',
+                'ControlBox',
                 #'Ground',
-                'LampPost', 
+                'LampPost',
                 # 'Pole',
                 # 'Railing',
                 # 'Road',
                 # 'Shrub',
                 'Sign',
-                'SolarPanel', 
-                'Tree', 
-                # 'dontcare'
+                # 'SolarPanel',
+                # 'Tree',
+                'TrafficLight'
                 ),
     }
     print(f'Reading from input file: {pkl_path}.')

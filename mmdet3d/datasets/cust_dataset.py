@@ -1,59 +1,3 @@
-# from typing import Callable, List, Union
-
-# import numpy as np
-
-# from mmdet3d.registry import DATASETS
-# from mmdet3d.structures import LiDARInstance3DBoxes
-# from mmdet3d.datasets.det3d_dataset import Det3DDataset
-
-
-# @DATASETS.register_module()
-# class MegDataset(Det3DDataset):
-
-#     METAINFO = {
-#         'classes':
-#         ('Tree', 'Building', 'Lamp Post', 'Sign', 'Control Box', 'Solar Panel')
-#     }
-
-#     def __init__(self,
-#                  data_root: str,
-#                  ann_file: str,
-#                  pipeline: List[Union[dict, Callable]] = [],
-#                  **kwargs) -> None:
-
-#         super().__init__(
-#             data_root=data_root,
-#             ann_file=ann_file,
-#             pipeline=pipeline,
-#             **kwargs)
-
-#     def parse_data_info(self, info: dict) -> dict:
-#         """Process the raw data info.
-
-#         Convert all relative path of needed modality data file to
-#         the absolute path. And process the `instances` field to
-#         `ann_info` in training stage.
-
-#         Args:
-#             info (dict): Raw info dict.
-
-#         Returns:
-#             dict: Has `ann_info` in training stage. And
-#             all path has been converted to absolute path.
-#         """
-
-#         if not self.test_mode:
-#             # used in training
-#             info['ann_info'] = self.parse_ann_info(info)
-#         if self.test_mode and self.load_eval_anns:
-#             info['eval_ann_info'] = self.parse_ann_info(info)
-
-#         return info
-
-    
-
-
-
 import copy
 import mmcv
 import numpy as np
@@ -114,8 +58,8 @@ class CustomDataset(Det3DDataset):
                 # 'Road',
                 # 'Shrub',
                 'Sign',
-                'SolarPanel',
-                'Tree'
+                'BusStop',
+                'TrafficLight'
                 # ,'dontcare'
                 )}
 
@@ -130,7 +74,7 @@ class CustomDataset(Det3DDataset):
                  box_type_3d='LiDAR',
                  filter_empty_gt=True,
                  test_mode=False,
-                 pcd_limit_range= [28063,31615,0, 28351, 31834, 32], #[-20, -20, 0, 20, 20, 20],
+                 pcd_limit_range= [30264,29862, 1.7, 34040, 41990, 25.7], #[-20, -20, 0, 20, 20, 20],
                  **kwargs):
         super().__init__(
             data_root=data_root,

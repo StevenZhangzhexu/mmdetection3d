@@ -858,7 +858,7 @@ class ObjectRangeFilter(BaseTransform):
     """
 
     def __init__(self, point_cloud_range: List[float]) -> None:
-        self.pcd_range = np.array(point_cloud_range, dtype=np.float32)
+        self.pcd_range = np.array(point_cloud_range, dtype=np.float32).reshape(-1)
 
     def transform(self, input_dict: dict) -> dict:
         """Transform function to filter objects by the range.
